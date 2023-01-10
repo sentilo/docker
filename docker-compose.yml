@@ -1,0 +1,108 @@
+services:
+      
+  sentilo-redis:
+    image: redis:${REDIS_VERSION}
+    container_name: sentilo-redis
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--appendonly", "yes"]
+    volumes:
+      - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
+    networks:
+      - sentilo_network
+               
+  sentilo-mongodb:
+    image: mongo:${MONGO_VERSION}
+    container_name: sentilo-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: sentilo
+      MONGO_INITDB_DATABASE: sentilo
+    volumes:
+      - ./config/mongo/config/mongod.conf:/etc/mongod/mongod.conf
+      - ./config/mongo/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+    ports:
+      - "27017:27017"
+    expose:
+      - 27017
+    healthcheck:
+      test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo -u admin -p 'sentilo' --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
+    command: [ "--replSet", "rs_sentilo", "--bind_ip_all" ]
+    networks:
+      - sentilo_network
+      
+  sentilo-platform-server:
+    image: sentilo-platform-server:${SENTILO_VERSION}
+    container_name: sentilo-platform-server
+    volumes:
+      - ./conf/:/etc/sentilo/
+      - ./logs/:/var/log/sentilo/
+    ports:
+      - "8081:8081"
+      - "7081:7081"
+    expose:
+      - 8081
+      - 7081
+    links:
+      - sentilo-redis
+      - sentilo-mongodb
+      - sentilo-catalog-web
+    depends_on:
+      - sentilo-catalog-web
+    networks:
+      - sentilo_network
+      
+  sentilo-agent-alert:
+    image: sentilo-agent-alert:${SENTILO_VERSION}
+    container_name: sentilo-agent-alert
+    volumes:
+      - ./conf/:/etc/sentilo/
+      - ./logs/:/var/log/sentilo/
+    links:
+      - sentilo-platform-server
+    depends_on:
+      - sentilo-platform-server
+    networks:
+      - sentilo_network
+      
+  sentilo-agent-location-updater:
+    image: sentilo-agent-location-updater:${SENTILO_VERSION}
+    container_name: sentilo-agent-location-updater
+    volumes:
+      - ./conf/:/etc/sentilo/
+      - ./logs/:/var/log/sentilo/
+    links:
+      - sentilo-platform-server
+    depends_on:
+      - sentilo-platform-server
+    networks:
+      - sentilo_network
+
+  sentilo-catalog-web:
+    image: sentilo-catalog-web:${SENTILO_VERSION}
+    container_name: sentilo-catalog-web
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
+    links:
+      - sentilo-mongodb
+      - sentilo-redis
+    depends_on:
+      - sentilo-mongodb
+      - sentilo-redis
+    volumes:
+      - ./conf/:/etc/sentilo/
+      - ./logs/:/var/log/sentilo/
+    networks:
+      - sentilo_network
+  
+networks:
+  sentilo_network:
+    ipam:
+      driver: default
+  
