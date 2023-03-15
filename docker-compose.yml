@@ -36,7 +36,7 @@ services:
       - sentilo_network
       
   sentilo-platform-server:
-    image: sentilo-platform-server:${SENTILO_VERSION}
+    image: sentilo/sentilo-platform-server:${SENTILO_VERSION}
     container_name: sentilo-platform-server
     volumes:
       - ./conf/:/etc/sentilo/
@@ -57,7 +57,7 @@ services:
       - sentilo_network
       
   sentilo-agent-alert:
-    image: sentilo-agent-alert:${SENTILO_VERSION}
+    image: sentilo/sentilo-agent-alert:${SENTILO_VERSION}
     container_name: sentilo-agent-alert
     volumes:
       - ./conf/:/etc/sentilo/
@@ -70,7 +70,7 @@ services:
       - sentilo_network
       
   sentilo-agent-location-updater:
-    image: sentilo-agent-location-updater:${SENTILO_VERSION}
+    image: sentilo/sentilo-agent-location-updater:${SENTILO_VERSION}
     container_name: sentilo-agent-location-updater
     volumes:
       - ./conf/:/etc/sentilo/
@@ -83,7 +83,7 @@ services:
       - sentilo_network
 
   sentilo-catalog-web:
-    image: sentilo-catalog-web:${SENTILO_VERSION}
+    image: sentilo/sentilo-catalog-web:${SENTILO_VERSION}
     container_name: sentilo-catalog-web
     ports:
       - "8080:8080"
