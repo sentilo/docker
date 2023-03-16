@@ -223,10 +223,10 @@ There are different shellscripts that allow us to perform the tasks of creating,
 
 Once we have created and started all the services, and assuming that we have docker running on our local machine, we can access the platform in the following way (if the default port values have not been changed):
 
-- Sentilo Catalog Web Application: http://locahost:8080/sentilo-catalog-web
+- Sentilo Catalog Web Application: http://localhost:8080/sentilo-catalog-web
     - user: admin
     - password: 1234
-- Sentilo API Rest platform server: http://locahost:8081
+- Sentilo API Rest platform server: http://localhost:8081
 
 ## Further information
 
